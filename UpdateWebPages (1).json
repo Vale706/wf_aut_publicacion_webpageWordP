@@ -1,0 +1,513 @@
+{
+  "name": "UpdateWebPages",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "14eCEeVGoKdS1wRKVlWGRbYxmtnsqW6AealbO6UZ0QwA",
+          "mode": "list",
+          "cachedResultName": "Update Paginas Web Ateneo NK / CC Patria Grande",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14eCEeVGoKdS1wRKVlWGRbYxmtnsqW6AealbO6UZ0QwA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1929068749,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14eCEeVGoKdS1wRKVlWGRbYxmtnsqW6AealbO6UZ0QwA/edit#gid=1929068749"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -80
+      ],
+      "id": "814c2f05-94dd-497c-b311-eebe5ed46cf8",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "GB1HcUhpu3XdjT5s",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "llama3:latest",
+          "mode": "list",
+          "cachedResultName": "llama3:latest"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Escribe un artículo en ESPAÑOL para mi sitio web. El título es: {{ $('Google Sheets Trigger').item.json['Título'] }}. Usa estos detalles como base: {{ $('Google Sheets Trigger').item.json.Body }}. Asegúrate de que el tono sea profesional y cercano."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        16
+      ],
+      "id": "2a66b9cf-1a31-4769-a632-017cecb399ce",
+      "name": "Message a model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "o74V6hFQmYyW69St",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3d698422-5cef-45d7-b0be-cb21cd9adc48",
+              "name": "direct_link",
+              "value": "=https://drive.google.com/uc?id={{ $json[\"Image\"].split('id=')[1] }}&export=download",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        -80
+      ],
+      "id": "c3bac7a9-8329-41eb-b406-5b4bdd8709ef",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.direct_link }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1248,
+        16
+      ],
+      "id": "ac29a002-27d4-441c-bbba-3c36a20b9fa6",
+      "name": "DESCARGA IMG - HTTP Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Google Sheets Trigger').item.json['A que pagina se sube?'] }}",
+                    "rightValue": "CC Patria Grande",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8289bc3a-7bb8-470e-91f7-824adf01f671"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cb0ffda6-c61d-4e73-889a-04f57cdce5be",
+                    "leftValue": "={{ $('Google Sheets Trigger').item.json['A que pagina se sube?'] }}",
+                    "rightValue": "Ateneo Néstor Kirchner",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1024,
+        -80
+      ],
+      "id": "ee0cae22-bec7-42a9-9853-fe0306d5dedf",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ateneonestorkirchner.com/wp-json/wp/v2/media",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "=Content-Disposition",
+              "value": "=attachment; filename=foto_ateneo.jpg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1472,
+        16
+      ],
+      "id": "4ef00e8b-2340-4474-8fbf-40403464db53",
+      "name": "SUBE ATENEO - HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "NQX3QtNtrSD2y4yi",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://centroculturalpatriagrande.org/wp-json/wp/v2/media",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "=Content-Disposition",
+              "value": "=attachment; filename=foto_ateneo.jpg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1472,
+        -176
+      ],
+      "id": "5daad249-9fa9-4197-8bb9-4ae970b0e2ac",
+      "name": "SUBE CC - HTTP Request1",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "NQX3QtNtrSD2y4yi",
+          "name": "Centro Cultural credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ateneonestorkirchner.com/wp-json/wp/v2/posts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $('Google Sheets Trigger').item.json['Título'] }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('Message a model').item.json.content }}"
+            },
+            {
+              "name": "status",
+              "value": "draft"
+            },
+            {
+              "name": "featured_media",
+              "value": "={{ Number($node[\"SUBE ATENEO - HTTP Request\"].json[\"id\"]) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2048,
+        16
+      ],
+      "id": "d06cb40f-f49a-4fdd-a353-556307f53821",
+      "name": "SUBE POST ATENEO",
+      "credentials": {
+        "wordpressApi": {
+          "id": "iMpVSs3xoJGwTF5I",
+          "name": "Wordpress account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://centroculturalpatriagrande.org/wp-json/wp/v2/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $('Google Sheets Trigger').item.json['Título'] }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('Message a model').item.json.content }}"
+            },
+            {
+              "name": "status",
+              "value": "publish"
+            },
+            {
+              "name": "featured_media",
+              "value": "={{ Number($node[\"SUBE CC - HTTP Request1\"].json[\"id\"]) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2048,
+        -176
+      ],
+      "id": "defce836-ed81-4f27-94fb-ef763a656031",
+      "name": "SUBE POST CC",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "NQX3QtNtrSD2y4yi",
+          "name": "Centro Cultural credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.direct_link }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1248,
+        -176
+      ],
+      "id": "1905d809-9f8f-4c34-bfd1-5bc7e6413c01",
+      "name": "DESCARGA IMG - HTTP Request1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "llama3:latest",
+          "mode": "list",
+          "cachedResultName": "llama3:latest"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Escribe un artículo en ESPAÑOL para mi sitio web. El título es: {{ $('Google Sheets Trigger').item.json['Título'] }}. Usa estos detalles como base: {{ $('Google Sheets Trigger').item.json.Body }}. Asegúrate de que el tono sea profesional y cercano."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        -176
+      ],
+      "id": "3c9ffffc-161b-432d-9579-5435e554ab6c",
+      "name": "Message a model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "o74V6hFQmYyW69St",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "SUBE POST ATENEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DESCARGA IMG - HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "SUBE ATENEO - HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "DESCARGA IMG - HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DESCARGA IMG - HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SUBE ATENEO - HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SUBE CC - HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DESCARGA IMG - HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "SUBE CC - HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "SUBE POST CC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "665c8822-5f63-4912-b72f-7533cc5fafd2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "47279345d97db5f557235736fcc4f1eccadea4948e3b6ab69a08a06e91575993"
+  },
+  "id": "tBd0TIXf5Btm0hmG",
+  "tags": []
+}
